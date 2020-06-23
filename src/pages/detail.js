@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+import { DateFormat } from '@redhat-cloud-services/frontend-components/components/cjs/DateFormat';
+
 import {
   Card,
   CardTitle,
@@ -34,6 +36,22 @@ const apiMapper = {
   'service-instances': getServiceInstanc,
   'service-plans': getServicePlan,
   'service-offerings': getServiceOffering,
+};
+
+const renderValue = (value, key) => {
+  if (!value) {
+    return '--';
+  }
+
+  if (key.endsWith('_at')) {
+    return <DateFormat date={value} />;
+  }
+
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  return <pre>{JSON.stringify(value, null, 2)}</pre>;
 };
 
 const EntityDetail = () => {
@@ -93,9 +111,7 @@ const EntityDetail = () => {
             {Object.keys(data).map((key) => (
               <React.Fragment key={key}>
                 <TextListItem component={TextListItemVariants.dt}>{key}</TextListItem>
-                <TextListItem component={TextListItemVariants.dd}>
-                  {typeof data[key] === 'string' ? data[key] : <pre>{JSON.stringify(data[key], null, 2)}</pre>}
-                </TextListItem>
+                <TextListItem component={TextListItemVariants.dd}>{renderValue(data[key], key)}</TextListItem>
               </React.Fragment>
             ))}
           </TextList>
