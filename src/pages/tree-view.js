@@ -22,8 +22,8 @@ import {
   getSecurityGroups,
   getTags,
   getNetworkAdapters,
-  getPrivateIpAddresses,
-  getPublicIpAddresses,
+  // getPrivateIpAddresses,
+  // getPublicIpAddresses,
 } from '../api/amazon';
 
 const promisesMapper = (id, typeName, dispatch) => {
@@ -67,12 +67,12 @@ const promisesMapper = (id, typeName, dispatch) => {
                 getNetworkAdapters(id).then((data) =>
                   dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'network-adapters', data } })
                 ),
-                getPrivateIpAddresses(id).then((data) =>
+                /*getPrivateIpAddresses(id).then((data) =>
                   dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'private-ip-addresses', data } })
                 ),
                 getPublicIpAddresses(id).then((data) =>
                   dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'public-ip-addresses', data } })
-                ),
+                ),*/
               ];
 
               return Promise.all(subCollections);
@@ -108,7 +108,7 @@ function createNodeData(node, type) {
   return {
     ...copy,
     id: node.id,
-    title: node.name || node.id,
+    title: node.name || node.id || node[Object.keys(node)[0]],
     ...(type && { type }),
     ...(node.entityType && { type: node.entityType }),
     nodeData: node,
@@ -134,16 +134,18 @@ const TreeView = () => {
     if (!structure?.data || structure?.data?.length === 0) {
       setLoading(true);
       Promise.all([getSources(), getSourceTypes()])
-        .then(async ([data, sourceTypes]) => {
-          const sourcesTypes = await getSourcesTypes(data.data.map(({ id }) => id));
+        .then(async ([sources, sourceTypes]) => {
+          const data = Array.isArray(sources.data) ? sources.data : [sources];
 
-          const modifiedData = data.data.map((d) => ({
+          const sourcesTypes = await getSourcesTypes(data.map(({ id }) => id));
+
+          const modifiedData = data.map((d) => ({
             ...d,
             entityType: 'sources',
-            source_type_id: sourcesTypes.data.sources.find(({ id }) => id === d.id).source_type_id,
+            source_type_id: sourcesTypes.data.sources.find(({ id }) => id === d.id)?.source_type_id,
             source_type_name: sourceTypes.data.find(
-              ({ id }) => id === sourcesTypes.data.sources.find(({ id }) => id === d.id).source_type_id
-            ).name,
+              ({ id }) => id === sourcesTypes.data.sources.find(({ id }) => id === d.id)?.source_type_id
+            )?.name,
           }));
 
           dispatch({
@@ -166,6 +168,7 @@ const TreeView = () => {
         });
     }
   }, []);
+
   if (loading) {
     return <CardLoader />;
   }

@@ -12,13 +12,23 @@ export const sourcesInitialState = {
 const setData = (state, { payload }) => ({ ...state, ...payload });
 
 const updateNested = (data, id, subCollections) =>
-  data.map((node) =>
-    node.id === id
+  data.map((node) => {
+    if (node.data && node.data.data) {
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          data: updateNested(node.data.data, id, subCollections),
+        },
+      };
+    }
+
+    return node.id === id
       ? { ...node, subCollections: [...(node.subCollections ? node.subCollections : []), subCollections] }
       : node.subCollections
       ? { ...node, subCollections: updateNested(node.subCollections, id, subCollections) }
-      : node
-  );
+      : node;
+  });
 
 const updateNode = ({ data, ...state }, { id, subCollections }) => ({
   ...state,

@@ -35,6 +35,7 @@ const Node = ({ title, level, children, render, ...node }) => {
             <AngleDownIcon />
           </Button>
         )}
+        {children.length === 0 && <span style={{ marginLeft: 46 }} />}
         {render({ title, level, ...node })}
       </div>
       {open && children.map((node) => <Node level={level + 1} key={node.id} _ {...node} render={render} />)}

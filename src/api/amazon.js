@@ -3,7 +3,7 @@ import { TOPOLOGICAL_INVETORY_API_BASE } from '../constants/api-constants';
 
 // level 1
 
-export const getVms = (id) => getAxtionsInstace().get(`${TOPOLOGICAL_INVETORY_API_BASE}/sources/${id}/vms`);
+export const getVms = (id) => getAxtionsInstace().get(`${TOPOLOGICAL_INVETORY_API_BASE}/sources/${id}/vms?limit=4`);
 
 // level 2 vms / id / type
 
