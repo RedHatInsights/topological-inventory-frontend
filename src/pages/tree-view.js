@@ -22,8 +22,8 @@ import {
   getSecurityGroups,
   getTags,
   getNetworkAdapters,
-  getPrivateIpAddresses,
-  getPublicIpAddresses,
+  // getPrivateIpAddresses,
+  // getPublicIpAddresses,
 } from '../api/amazon';
 
 const promisesMapper = (id, typeName, dispatch) => {
