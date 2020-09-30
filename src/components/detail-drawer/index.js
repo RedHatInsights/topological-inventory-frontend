@@ -3,11 +3,9 @@ import { Drawer, DrawerContent, DrawerContentBody } from '@patternfly/react-core
 import PropTypes from 'prop-types';
 import PanelContent from './drawer-panel-content';
 
-const DetailDrawer = ({ open, data: { type, entityType, ...node }, setOpen, children }) => (
+const DetailDrawer = ({ open, data, close, children, node, name }) => (
   <Drawer isExpanded={open}>
-    <DrawerContent
-      panelContent={<PanelContent setOpen={setOpen} type={type} entityType={entityType} {...node} node={node} />}
-    >
+    <DrawerContent panelContent={<PanelContent close={close} data={data} id={node} name={name} />}>
       <DrawerContentBody>{children}</DrawerContentBody>
     </DrawerContent>
   </Drawer>
@@ -19,8 +17,10 @@ DetailDrawer.propTypes = {
     type: PropTypes.string,
     entityType: PropTypes.string,
   }),
-  setOpen: PropTypes.func.isRequired,
+  close: PropTypes.func.isRequired,
   children: PropTypes.oneOfType([PropTypes.node, PropTypes.arrayOf(PropTypes.node)]),
+  node: PropTypes.string,
+  name: PropTypes.string,
 };
 
 export default DetailDrawer;

@@ -1,41 +1,53 @@
-import { SET_DATA, UPDATE_NODE } from '../action-types/sources-action-types';
+import {
+  LOAD_DATA,
+  LOAD_SOURCE_TYPES,
+  LOAD_DETAIL_FULFILLED,
+  LOAD_DETAIL_FAILED,
+  LOAD_DETAIL_PENDING,
+} from '../action-types/sources-action-types';
 
 export const sourcesInitialState = {
-  data: [],
-  meta: {
-    limit: 50,
-    offset: 0,
-    count: 0,
-  },
+  isLoaded: false,
+  sourceTypes: [],
+  sources: [],
+  details: {},
+  isDetailLoading: false,
 };
 
-const setData = (state, { payload }) => ({ ...state, ...payload });
-
-const updateNested = (data, id, subCollections) =>
-  data.map((node) => {
-    if (node.data && node.data.data) {
-      return {
-        ...node,
-        data: {
-          ...node.data,
-          data: updateNested(node.data.data, id, subCollections),
-        },
-      };
-    }
-
-    return node.id === id
-      ? { ...node, subCollections: [...(node.subCollections ? node.subCollections : []), subCollections] }
-      : node.subCollections
-      ? { ...node, subCollections: updateNested(node.subCollections, id, subCollections) }
-      : node;
-  });
-
-const updateNode = ({ data, ...state }, { id, subCollections }) => ({
+const loadData = (state, { payload: { sources } }) => ({
   ...state,
-  data: updateNested(data, id, subCollections),
+  isLoaded: true,
+  sources,
+});
+
+const loadSourceTypes = (state, { payload: { data } }) => ({
+  ...state,
+  sourceTypes: data,
+});
+
+const loadDetailPending = (state) => ({
+  ...state,
+  isDetailLoading: true,
+});
+
+const loadDetailFailed = (state) => ({
+  ...state,
+  isDetailLoading: false,
+});
+
+const loadDetailFulfilled = (state, { payload }) => ({
+  ...state,
+  details: {
+    ...state.details,
+    ...payload,
+  },
+  isDetailLoading: false,
 });
 
 export default {
-  [SET_DATA]: setData,
-  [UPDATE_NODE]: updateNode,
+  [LOAD_DATA]: loadData,
+  [LOAD_SOURCE_TYPES]: loadSourceTypes,
+  [LOAD_DETAIL_FULFILLED]: loadDetailFulfilled,
+  [LOAD_DETAIL_FAILED]: loadDetailFailed,
+  [LOAD_DETAIL_PENDING]: loadDetailPending,
 };
