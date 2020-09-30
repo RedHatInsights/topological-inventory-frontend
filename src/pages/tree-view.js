@@ -45,20 +45,14 @@ const createTreeData = (item, infoNode = structureNode, sourceTypes = []) => {
   };
 };
 
-const initialState = (loading) => ({
-  loading,
+const initialState = {
   node: undefined,
   open: false,
   name: undefined,
-});
+};
 
 const reducer = (state, { type, node, name }) => {
   switch (type) {
-    case 'loadingFinished':
-      return {
-        ...state,
-        loading: false,
-      };
     case 'openNode':
       return {
         ...state,
@@ -76,22 +70,20 @@ const reducer = (state, { type, node, name }) => {
 
 const TreeView = () => {
   const isLoaded = useSelector(({ sourcesReducer: { isLoaded } }) => isLoaded);
-  const [{ loading, name, node, open }, stateDispatch] = useReducer(reducer, initialState(!isLoaded));
+  const [{ name, node, open }, stateDispatch] = useReducer(reducer, initialState);
   const dispatch = useDispatch();
   const sources = useSelector(({ sourcesReducer }) => sourcesReducer.sources, shallowEqual);
   const sourceTypes = useSelector(({ sourcesReducer }) => sourcesReducer.sourceTypes, shallowEqual);
   const details = useSelector(({ sourcesReducer }) => sourcesReducer.details, shallowEqual);
 
   useEffect(() => {
-    if (loading) {
+    if (!isLoaded) {
       dispatch(loadSourceTypes());
-      dispatch(loadSourcesAction()).then(() => {
-        stateDispatch({ type: 'loadingFinished' });
-      });
+      dispatch(loadSourcesAction());
     }
   }, []);
 
-  if (loading) {
+  if (!isLoaded) {
     return <CardLoader />;
   }
 
