@@ -1,4 +1,10 @@
-const prefix = '@@sources/';
+const prefix = '@@topological_inventory_frontend/';
 
-export const SET_DATA = `${prefix}SET_DATA`;
-export const UPDATE_NODE = `${prefix}UPDATE_NODE`;
+export const LOAD_DATA = `${prefix}LOAD_DATA`;
+
+export const LOAD_SOURCE_TYPES = `${prefix}LOAD_SOURCE_TYPES`;
+export const LOAD_SOURCE_TYPES_FAILED = `${prefix}LOAD_SOURCE_TYPES_FAILED`;
+
+export const LOAD_DETAIL_PENDING = `${prefix}LOAD_DETAIL_PENDING`;
+export const LOAD_DETAIL_FULFILLED = `${prefix}LOAD_DETAIL_FULFILLED`;
+export const LOAD_DETAIL_FAILED = `${prefix}LOAD_DETAIL_FAILED`;

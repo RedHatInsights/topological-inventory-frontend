@@ -1,6 +1,7 @@
 import ReducerRegistry, {
   applyReducerHash,
 } from '@redhat-cloud-services/frontend-components-utilities/files/ReducerRegistry';
+import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise-middleware';
 import sourcesReducer, { sourcesInitialState } from './reducers/sources-reducer';
 
@@ -11,7 +12,7 @@ export const init = (...middleware) => {
     throw new Error('store already initialized');
   }
 
-  registry = new ReducerRegistry({}, [promiseMiddleware, ...middleware]);
+  registry = new ReducerRegistry({}, [thunk, promiseMiddleware, ...middleware]);
 
   registry.register({
     sourcesReducer: applyReducerHash(sourcesReducer, sourcesInitialState),

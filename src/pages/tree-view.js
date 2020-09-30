@@ -1,171 +1,93 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import Tree from '../components/tree';
-import {
-  getSources,
-  getServiceOfferingNodes,
-  getServiceInstanceNodes,
-  getServiceInventories,
-  getServiceInstance,
-  getServicePlans,
-  getServiceOfferings,
-} from '../api/ansible-tower';
-import { UPDATE_NODE, SET_DATA } from '../store/action-types/sources-action-types';
+import React, { useEffect, useReducer } from 'react';
+import { useDispatch, useSelector, shallowEqual } from 'react-redux';
+
 import { Link } from 'react-router-dom';
 import { Card, CardBody, CardTitle, Breadcrumb, BreadcrumbItem } from '@patternfly/react-core';
+
+import { structureNode } from '../api/topology-viewer-api';
+
 import CardLoader from '../components/loaders/card-loader';
 import { paths } from '../routes';
 import DetailDrawer from '../components/detail-drawer';
-import { getSourcesTypes, getSourceTypes } from '../api/sources';
-import {
-  getVms,
-  getSecurityGroups,
-  getTags,
-  getNetworkAdapters,
-  // getPrivateIpAddresses,
-  // getPublicIpAddresses,
-} from '../api/amazon';
+import { loadSourcesAction, loadSourceTypes, loadItemDetail } from '../store/actions';
 
-const promisesMapper = (id, typeName, dispatch) => {
-  switch (typeName) {
-    case 'ansible-tower':
-      return [
-        getServiceOfferings(id).then((data) =>
-          dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'service-offerings', data } })
-        ),
-        getServicePlans(id).then((data) =>
-          dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'service-plans', data } })
-        ),
-        getServiceInstance(id).then((data) =>
-          dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'service-instances', data } })
-        ),
-        getServiceInventories(id).then((data) =>
-          dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'service-inventories', data } })
-        ),
-        getServiceInstanceNodes(id).then((data) =>
-          dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'service-instance-nodes', data } })
-        ),
-        getServiceOfferingNodes(id).then((data) =>
-          dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'service-offering-nodes', data } })
-        ),
-      ];
-    case 'amazon':
-      return [
-        getVms(id)
-          .then((data) => {
-            dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'vms', data } });
+import { TreeView as PFTreeView } from '@patternfly/react-core';
 
-            return data.data;
-          })
-          .then((data) => {
-            const promises = data.map(({ id }) => {
-              const subCollections = [
-                getSecurityGroups(id).then((data) =>
-                  dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'security-groups', data } })
-                ),
-                getTags(id).then((data) => dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'tags', data } })),
-                getNetworkAdapters(id).then((data) =>
-                  dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'network-adapters', data } })
-                ),
-                /*getPrivateIpAddresses(id).then((data) =>
-                  dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'private-ip-addresses', data } })
-                ),
-                getPublicIpAddresses(id).then((data) =>
-                  dispatch({ type: UPDATE_NODE, id, subCollections: { type: 'public-ip-addresses', data } })
-                ),*/
-              ];
-
-              return Promise.all(subCollections);
-            });
-
-            return Promise.all(promises);
-          }),
-      ];
-    default:
-      return [];
-  }
-};
-
-function createNodeData(node, type) {
-  if (!node) {
-    return;
+const createTreeData = (item, infoNode = structureNode, sourceTypes = []) => {
+  if (Array.isArray(item)) {
+    return item.map((source) => createTreeData(source, infoNode, sourceTypes));
   }
 
-  const copy = {};
-  if (node.subCollections) {
-    node.subCollections.forEach((collection) => {
-      copy.children = [
-        ...(copy.children || []),
-        {
-          id: `sub-collection-${collection.type}`,
-          title: collection.type,
-          children: collection.data.data.map((child) => createNodeData(child, collection.type)),
-        },
-      ];
-    });
+  const children = [];
+
+  infoNode.children?.forEach((child) => {
+    if (item[child.name]?.length > 0) {
+      children.push({
+        name: child.label,
+        id: child.name,
+        children: item[child.name]?.map((subItem) => createTreeData(subItem, child, sourceTypes)),
+      });
+    }
+  });
+
+  let name = item.name || item.id;
+
+  if (infoNode.transformLabel) {
+    name = infoNode.transformLabel(item, sourceTypes);
   }
 
   return {
-    ...copy,
-    id: node.id,
-    title: node.name || node.id || node[Object.keys(node)[0]],
-    ...(type && { type }),
-    ...(node.entityType && { type: node.entityType }),
-    nodeData: node,
+    id: item.id,
+    key: item.id,
+    name,
+    ...(children.length > 0 ? { children } : {}),
+    isSelectable: true,
   };
-}
+};
 
-function createTreeData(sources) {
-  if (!sources?.data) {
-    return;
+const initialState = (loading) => ({
+  loading,
+  node: undefined,
+  open: false,
+  name: undefined,
+});
+
+const reducer = (state, { type, node, name }) => {
+  switch (type) {
+    case 'loadingFinished':
+      return {
+        ...state,
+        loading: false,
+      };
+    case 'openNode':
+      return {
+        ...state,
+        node,
+        name,
+        open: true,
+      };
+    case 'closeNode':
+      return {
+        ...state,
+        open: false,
+      };
   }
-
-  return sources.data.map((source) => createNodeData(source));
-}
+};
 
 const TreeView = () => {
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState({});
-  const [open, setOpen] = useState(false);
+  const isLoaded = useSelector(({ sourcesReducer: { isLoaded } }) => isLoaded);
+  const [{ loading, name, node, open }, stateDispatch] = useReducer(reducer, initialState(!isLoaded));
   const dispatch = useDispatch();
-  const structure = useSelector(({ sourcesReducer }) => sourcesReducer);
+  const sources = useSelector(({ sourcesReducer }) => sourcesReducer.sources, shallowEqual);
+  const sourceTypes = useSelector(({ sourcesReducer }) => sourcesReducer.sourceTypes, shallowEqual);
+  const details = useSelector(({ sourcesReducer }) => sourcesReducer.details, shallowEqual);
 
   useEffect(() => {
-    if (!structure?.data || structure?.data?.length === 0) {
-      setLoading(true);
-      Promise.all([getSources(), getSourceTypes()])
-        .then(async ([sources, sourceTypes]) => {
-          const data = Array.isArray(sources.data) ? sources.data : [sources];
-
-          const sourcesTypes = await getSourcesTypes(data.map(({ id }) => id));
-
-          const modifiedData = data.map((d) => ({
-            ...d,
-            entityType: 'sources',
-            source_type_id: sourcesTypes.data.sources.find(({ id }) => id === d.id)?.source_type_id,
-            source_type_name: sourceTypes.data.find(
-              ({ id }) => id === sourcesTypes.data.sources.find(({ id }) => id === d.id)?.source_type_id
-            )?.name,
-          }));
-
-          dispatch({
-            type: SET_DATA,
-            payload: {
-              ...data,
-              data: modifiedData,
-            },
-          });
-
-          return modifiedData;
-        })
-        .then((sources) => {
-          const promises = sources.map(({ id, source_type_name }) => {
-            const subCollections = promisesMapper(id, source_type_name, dispatch);
-
-            return Promise.all(subCollections).then(() => setLoading(false));
-          });
-          return Promise.all(promises);
-        });
+    if (loading) {
+      dispatch(loadSourceTypes());
+      dispatch(loadSourcesAction()).then(() => {
+        stateDispatch({ type: 'loadingFinished' });
+      });
     }
   }, []);
 
@@ -173,11 +95,16 @@ const TreeView = () => {
     return <CardLoader />;
   }
 
-  const { entityType, subCollections, ...restOfData } = data;
+  const treeData = createTreeData(sources, structureNode, sourceTypes);
 
-  const treeData = createTreeData(structure);
   return (
-    <DetailDrawer open={open} data={restOfData} setOpen={setOpen}>
+    <DetailDrawer
+      open={open}
+      data={details[node]}
+      node={node}
+      close={() => stateDispatch({ type: 'closeNode' })}
+      name={name}
+    >
       <Card>
         <CardTitle>
           <Breadcrumb>
@@ -188,22 +115,20 @@ const TreeView = () => {
           </Breadcrumb>
         </CardTitle>
         <CardBody>
-          <Tree
+          Sources
+          <PFTreeView
             data={treeData}
-            render={({ title, type, nodeData }) =>
-              type ? (
-                <a
-                  onClick={() => {
-                    setData({ type, entityType, ...nodeData });
-                    setOpen(true);
-                  }}
-                >
-                  {title}
-                </a>
-              ) : (
-                <span>{title}</span>
-              )
-            }
+            onSelect={(e, item, parent) => {
+              if (item.isSelectable) {
+                const category = parent?.id || 'sources';
+                stateDispatch({
+                  type: 'openNode',
+                  name: item.name,
+                  node: `${category}-${item.id}`,
+                });
+                dispatch(loadItemDetail(category, item.id));
+              }
+            }}
           />
         </CardBody>
       </Card>

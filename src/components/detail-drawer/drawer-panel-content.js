@@ -1,16 +1,32 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ReactJsonView from 'react-json-view';
-import { DrawerPanelContent, DrawerHead, DrawerActions, DrawerCloseButton } from '@patternfly/react-core';
+import {
+  DrawerPanelContent,
+  DrawerHead,
+  DrawerActions,
+  DrawerCloseButton,
+  Spinner,
+  Bullseye,
+} from '@patternfly/react-core';
+import { useSelector } from 'react-redux';
 
-const PanelContent = ({ setOpen, type, entityType, name, id, node }) => {
+const PanelContent = ({ close, id, data, name }) => {
+  const isLoading = useSelector(({ sourcesReducer }) => sourcesReducer.isDetailLoading);
+
   return (
     <DrawerPanelContent>
       <DrawerHead>
-        {`${type || entityType} ${name || id}`}
-        <ReactJsonView src={node} />
+        {name} -- {id}
+        {isLoading ? (
+          <Bullseye className="pf-u-p-xl">
+            <Spinner />
+          </Bullseye>
+        ) : (
+          <ReactJsonView src={data} />
+        )}
         <DrawerActions>
-          <DrawerCloseButton onClick={() => setOpen(false)} />
+          <DrawerCloseButton onClick={close} />
         </DrawerActions>
       </DrawerHead>
     </DrawerPanelContent>
@@ -18,12 +34,10 @@ const PanelContent = ({ setOpen, type, entityType, name, id, node }) => {
 };
 
 PanelContent.propTypes = {
-  setOpen: PropTypes.func.isRequired,
-  type: PropTypes.node,
-  entityType: PropTypes.node,
-  name: PropTypes.string,
+  close: PropTypes.func.isRequired,
   id: PropTypes.string,
-  node: PropTypes.object,
+  data: PropTypes.object,
+  name: PropTypes.string,
 };
 
 export default PanelContent;
