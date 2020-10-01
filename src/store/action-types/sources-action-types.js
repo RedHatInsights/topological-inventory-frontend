@@ -11,3 +11,5 @@ export const LOAD_DETAIL_FAILED = `${prefix}LOAD_DETAIL_FAILED`;
 
 export const CLOSE_DETAIL = `${prefix}CLOSE_DETAIL`;
 export const OPEN_DETAIL = `${prefix}OPEN_DETAIL`;
+
+export const CLICK_ON_NODE = `${prefix}CLICK_ON_NODE`;
