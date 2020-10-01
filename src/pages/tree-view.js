@@ -30,7 +30,7 @@ const createTreeData = (item, infoNode = structureNode, sourceTypes = []) => {
     }
   });
 
-  let name = item.name || item.id;
+  let name = (infoNode.attributes && item[infoNode.attributes[0]]) || item.name || item.id;
 
   if (infoNode.transformLabel) {
     name = infoNode.transformLabel(item, sourceTypes);

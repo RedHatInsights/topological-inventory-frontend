@@ -67,21 +67,50 @@ export const structureNode = {
       },
     },
     {
-      name: 'vms',
-      label: 'Virtual machines',
+      name: 'source_regions',
+      label: 'Source regions',
       attributes: ['name'],
-      topologyViewNode: {},
       children: [
         {
-          name: 'network_adapters',
-          label: 'Network adapters',
-          topologyViewNode: {},
+          name: 'networks',
+          label: 'Networks',
+          attributes: ['name'],
+          children: [
+            {
+              name: 'subnets',
+              label: 'Subnets',
+              attributes: ['name'],
+            },
+          ],
         },
         {
-          name: 'security_groups',
-          label: 'Security groups',
+          name: 'vms',
+          label: 'Virtual machines',
           attributes: ['name'],
-          topologyViewNode: {},
+          children: [
+            {
+              name: 'network_adapters',
+              label: 'Network adapters',
+              attributes: ['mac_address'],
+              children: [
+                {
+                  name: 'ipaddresses',
+                  label: 'IP addresses',
+                  attributes: ['ipaddress'],
+                },
+              ],
+            },
+            {
+              name: 'security_groups',
+              label: 'Security groups',
+              attributes: ['name'],
+            },
+            {
+              name: 'volumes',
+              label: 'Volumes',
+              attributes: ['name'],
+            },
+          ],
         },
       ],
     },
