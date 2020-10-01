@@ -152,11 +152,15 @@ const buildNodesEnhanced = (item, infoNode = structureNode, sourceTypes = [], gr
 const TopologyView = () => {
   const openedNodes = useSelector(
     ({ sourcesReducer }) => sourcesReducer.openedNodes,
-    () => false
+    () => true
   );
   const isLoaded = useSelector(({ sourcesReducer: { isLoaded } }) => isLoaded);
   const sources = useSelector(({ sourcesReducer }) => sourcesReducer.sources, shallowEqual);
   const sourceTypes = useSelector(({ sourcesReducer }) => sourcesReducer.sourceTypes, shallowEqual);
+  const openedNode = useSelector(
+    ({ sourcesReducer }) => sourcesReducer.detail.node,
+    () => true
+  );
 
   const reduxDispatch = useDispatch();
 
@@ -232,6 +236,7 @@ const TopologyView = () => {
         edges={state.edges}
         nodes={state.nodes}
         iconMapper={iconMapper}
+        {...(openedNode && { selectedNode: { id: openedNode } })}
       />
     </React.Fragment>
   );

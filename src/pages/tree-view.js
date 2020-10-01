@@ -56,7 +56,7 @@ const TreeView = () => {
   const sourceTypes = useSelector(({ sourcesReducer }) => sourcesReducer.sourceTypes, shallowEqual);
   const openedNodes = useSelector(
     ({ sourcesReducer }) => sourcesReducer.openedNodes,
-    () => false
+    () => true
   );
   const openedNode = useSelector(({ sourcesReducer }) => sourcesReducer.detail.node);
 
