@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import ReactJsonView from 'react-json-view';
 import {
   DrawerPanelContent,
@@ -8,16 +7,29 @@ import {
   DrawerCloseButton,
   Spinner,
   Bullseye,
+  DrawerPanelBody,
 } from '@patternfly/react-core';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
-const PanelContent = ({ close, id, data, name }) => {
+import { closeDetailDrawer } from '../../store/actions';
+
+const PanelContent = () => {
   const isLoading = useSelector(({ sourcesReducer }) => sourcesReducer.isDetailLoading);
+  const id = useSelector(({ sourcesReducer }) => sourcesReducer.detail?.node);
+  const name = useSelector(({ sourcesReducer }) => sourcesReducer.detail?.name);
+  const data = useSelector(({ sourcesReducer }) => sourcesReducer.details?.[id]);
+
+  const dispatch = useDispatch();
 
   return (
     <DrawerPanelContent>
       <DrawerHead>
         {name} -- {id}
+        <DrawerActions>
+          <DrawerCloseButton onClick={() => dispatch(closeDetailDrawer())} />
+        </DrawerActions>
+      </DrawerHead>
+      <DrawerPanelBody>
         {isLoading ? (
           <Bullseye className="pf-u-p-xl">
             <Spinner />
@@ -25,19 +37,9 @@ const PanelContent = ({ close, id, data, name }) => {
         ) : (
           <ReactJsonView src={data} />
         )}
-        <DrawerActions>
-          <DrawerCloseButton onClick={close} />
-        </DrawerActions>
-      </DrawerHead>
+      </DrawerPanelBody>
     </DrawerPanelContent>
   );
-};
-
-PanelContent.propTypes = {
-  close: PropTypes.func.isRequired,
-  id: PropTypes.string,
-  data: PropTypes.object,
-  name: PropTypes.string,
 };
 
 export default PanelContent;

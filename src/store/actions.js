@@ -5,6 +5,8 @@ import {
   LOAD_DETAIL_FULFILLED,
   LOAD_DETAIL_FAILED,
   LOAD_DETAIL_PENDING,
+  OPEN_DETAIL,
+  CLOSE_DETAIL,
 } from './action-types/sources-action-types';
 
 import { loadSources } from '../api/topology-viewer-api';
@@ -44,7 +46,12 @@ export const loadSourceTypes = () => async (dispatch) => {
   }
 };
 
-export const loadItemDetail = (name, id) => async (dispatch, getState) => {
+export const loadItemDetail = (name, id, nodeName) => async (dispatch, getState) => {
+  dispatch({
+    type: OPEN_DETAIL,
+    payload: { node: `${name}-${id}`, name: nodeName },
+  });
+
   const {
     sourcesReducer: { details },
   } = getState();
@@ -73,3 +80,7 @@ export const loadItemDetail = (name, id) => async (dispatch, getState) => {
     });
   }
 };
+
+export const closeDetailDrawer = () => ({
+  type: CLOSE_DETAIL,
+});
