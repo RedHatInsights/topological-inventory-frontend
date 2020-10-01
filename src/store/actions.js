@@ -7,6 +7,7 @@ import {
   LOAD_DETAIL_PENDING,
   OPEN_DETAIL,
   CLOSE_DETAIL,
+  CLICK_ON_NODE,
 } from './action-types/sources-action-types';
 
 import { loadSources } from '../api/topology-viewer-api';
@@ -83,4 +84,9 @@ export const loadItemDetail = (name, id, nodeName) => async (dispatch, getState)
 
 export const closeDetailDrawer = () => ({
   type: CLOSE_DETAIL,
+});
+
+export const clickOnNode = (name, id) => ({
+  type: CLICK_ON_NODE,
+  payload: { node: `${name}-${id}` },
 });

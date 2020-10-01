@@ -6,6 +6,7 @@ import {
   LOAD_DETAIL_PENDING,
   CLOSE_DETAIL,
   OPEN_DETAIL,
+  CLICK_ON_NODE,
 } from '../action-types/sources-action-types';
 
 export const sourcesInitialState = {
@@ -19,6 +20,7 @@ export const sourcesInitialState = {
     node: undefined,
     name: undefined,
   },
+  openedNodes: [],
 };
 
 const loadData = (state, { payload: { sources } }) => ({
@@ -66,6 +68,13 @@ const openDetail = (state, { payload }) => ({
   },
 });
 
+const clickOnNode = (state, { payload }) => ({
+  ...state,
+  openedNodes: state.openedNodes.includes(payload.node)
+    ? state.openedNodes.filter((node) => node !== payload.node)
+    : [...state.openedNodes, payload.node],
+});
+
 export default {
   [LOAD_DATA]: loadData,
   [LOAD_SOURCE_TYPES]: loadSourceTypes,
@@ -74,4 +83,5 @@ export default {
   [LOAD_DETAIL_PENDING]: loadDetailPending,
   [CLOSE_DETAIL]: closeDetail,
   [OPEN_DETAIL]: openDetail,
+  [CLICK_ON_NODE]: clickOnNode,
 };

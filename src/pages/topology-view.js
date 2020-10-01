@@ -1,14 +1,12 @@
 import React, { useEffect, useReducer } from 'react';
 import TopologyViewer from '@data-driven-forms/topology-viewer';
-import { Breadcrumb, BreadcrumbItem } from '@patternfly/react-core';
-import { Link } from 'react-router-dom';
 
 import { useSelector, shallowEqual, useDispatch } from 'react-redux';
-import { paths } from '../routes';
-import { loadSourceTypes, loadSourcesAction, loadItemDetail } from '../store/actions';
+import { loadSourceTypes, loadSourcesAction, loadItemDetail, clickOnNode } from '../store/actions';
 import CardLoader from '../components/loaders/card-loader';
 import { structureNode } from '../api/topology-viewer-api';
 import iconMapper from '../utilities/icon-mapper';
+import ViewSwitcher from '../components/view-switcher';
 
 const findAllChildren = (nodeIds, edges = [], state) => {
   let allEdges = [...edges];
@@ -152,6 +150,10 @@ const buildNodesEnhanced = (item, infoNode = structureNode, sourceTypes = [], gr
 };
 
 const TopologyView = () => {
+  const openedNodes = useSelector(
+    ({ sourcesReducer }) => sourcesReducer.openedNodes,
+    () => false
+  );
   const isLoaded = useSelector(({ sourcesReducer: { isLoaded } }) => isLoaded);
   const sources = useSelector(({ sourcesReducer }) => sourcesReducer.sources, shallowEqual);
   const sourceTypes = useSelector(({ sourcesReducer }) => sourcesReducer.sourceTypes, shallowEqual);
@@ -170,11 +172,34 @@ const TopologyView = () => {
   useEffect(() => {
     if (isLoaded) {
       const nodes = buildNodesEnhanced(sources, structureNode, sourceTypes);
-      dispatch({ type: 'setData', payload: { nodes, edges: [] } });
+      const edges = [];
+
+      if (openedNodes.length) {
+        openedNodes.forEach((openedNode) => {
+          const expanedNode = nodes.find(({ id }) => openedNode === id);
+
+          if (expanedNode) {
+            let childrenNodes = expanedNode.renderChildrenNodes && expanedNode.renderChildrenNodes();
+
+            if (childrenNodes?.length > 0) {
+              expanedNode.originalLength = expanedNode.children;
+              expanedNode.children = undefined;
+              expanedNode.wasClicked = true;
+
+              nodes.push(...childrenNodes);
+              edges.push(...expanedNode.renderEdges());
+            }
+          }
+        });
+      }
+
+      dispatch({ type: 'setData', payload: { nodes, edges } });
     }
   }, [isLoaded]);
 
   const handleNodeClick = (node) => {
+    reduxDispatch(clickOnNode(node.category, node.originalId));
+
     if (node.isSelectable) {
       reduxDispatch(loadItemDetail(node.category, node.originalId, node.title));
     }
@@ -201,12 +226,7 @@ const TopologyView = () => {
 
   return (
     <React.Fragment>
-      <Breadcrumb style={{ position: 'absolute' }} className="pf-u-m-lg">
-        <BreadcrumbItem>
-          <Link to={paths.index}>Topological inventory</Link>
-        </BreadcrumbItem>
-        <BreadcrumbItem isActive>Topology view</BreadcrumbItem>
-      </Breadcrumb>
+      <ViewSwitcher style={{ position: 'absolute' }} className="pf-u-m-lg" />
       <TopologyViewer
         handleNodeClick={handleNodeClick}
         edges={state.edges}
