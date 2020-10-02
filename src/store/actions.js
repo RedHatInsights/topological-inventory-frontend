@@ -8,6 +8,8 @@ import {
   OPEN_DETAIL,
   CLOSE_DETAIL,
   CLICK_ON_NODE,
+  KEEP_CLOSED,
+  OPEN_DETAIL_BUTTON,
 } from './action-types/sources-action-types';
 
 import { loadSources } from '../api/topology-viewer-api';
@@ -89,4 +91,12 @@ export const closeDetailDrawer = () => ({
 export const clickOnNode = (node) => ({
   type: CLICK_ON_NODE,
   payload: { node },
+});
+
+export const keepClosed = () => ({
+  type: KEEP_CLOSED,
+});
+
+export const openDetailButton = () => ({
+  type: OPEN_DETAIL_BUTTON,
 });

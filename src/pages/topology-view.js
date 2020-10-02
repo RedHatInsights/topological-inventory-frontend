@@ -1,5 +1,6 @@
 import React, { useEffect, useReducer } from 'react';
 import TopologyViewer from '@data-driven-forms/topology-viewer';
+import styled from 'styled-components';
 
 import { useSelector, shallowEqual, useDispatch } from 'react-redux';
 import { loadSourceTypes, loadSourcesAction, loadItemDetail, clickOnNode } from '../store/actions';
@@ -7,6 +8,18 @@ import CardLoader from '../components/loaders/card-loader';
 import { structureNode } from '../api/topology-viewer-api';
 import iconMapper from '../utilities/icon-mapper';
 import ViewSwitcher from '../components/view-switcher';
+
+const WrapperDiv = styled('div')`
+  position: relative;
+  height: 100%;
+`;
+
+const TopologyWrapper = styled('div')`
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 100%;
+`;
 
 const findAllChildren = (nodeIds, edges = [], state) => {
   let allEdges = [...edges];
@@ -229,16 +242,18 @@ const TopologyView = () => {
   }
 
   return (
-    <React.Fragment>
-      <ViewSwitcher style={{ position: 'absolute' }} className="pf-u-m-lg" />
-      <TopologyViewer
-        handleNodeClick={handleNodeClick}
-        edges={state.edges}
-        nodes={state.nodes}
-        iconMapper={iconMapper}
-        {...(openedNode && { selectedNode: { id: openedNode } })}
-      />
-    </React.Fragment>
+    <WrapperDiv>
+      <ViewSwitcher style={{ position: 'relative', zIndex: 1 }} className="pf-u-p-lg" />
+      <TopologyWrapper>
+        <TopologyViewer
+          handleNodeClick={handleNodeClick}
+          edges={state.edges}
+          nodes={state.nodes}
+          iconMapper={iconMapper}
+          {...(openedNode && { selectedNode: { id: openedNode } })}
+        />
+      </TopologyWrapper>
+    </WrapperDiv>
   );
 };
 

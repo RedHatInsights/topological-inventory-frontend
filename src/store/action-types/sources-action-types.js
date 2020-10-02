@@ -13,3 +13,6 @@ export const CLOSE_DETAIL = `${prefix}CLOSE_DETAIL`;
 export const OPEN_DETAIL = `${prefix}OPEN_DETAIL`;
 
 export const CLICK_ON_NODE = `${prefix}CLICK_ON_NODE`;
+
+export const OPEN_DETAIL_BUTTON = `${prefix}OPEN_DETAIL_BUTTON`;
+export const KEEP_CLOSED = `${prefix}KEEP_CLOSED`;
