@@ -20,11 +20,13 @@ const createTreeData = (item, infoNode = structureNode, sourceTypes = [], expand
 
   infoNode.children?.forEach((child) => {
     if (item[child.name]?.length > 0) {
+      const nodeName = `${item.id}-${child.name}`;
+
       children.push({
         name: child.label,
-        id: child.name,
+        id: nodeName,
         children: item[child.name]?.map((subItem) => createTreeData(subItem, child, sourceTypes, expandedNodes)),
-        defaultExpanded: expandedNodes.includes(`${item.id}-${child.name}`),
+        defaultExpanded: expandedNodes.includes(nodeName),
       });
     }
   });
@@ -35,14 +37,17 @@ const createTreeData = (item, infoNode = structureNode, sourceTypes = [], expand
     name = infoNode.transformLabel(item, sourceTypes);
   }
 
+  const nodeName = `${infoNode.name}-${item.id}`;
+
   return {
-    id: item.id,
+    originalId: item.id,
+    id: nodeName,
     key: item.id,
     name,
     ...(children.length > 0 ? { children } : {}),
     isSelectable: true,
-    defaultExpanded: expandedNodes.includes(`${infoNode.name}-${item.id}`),
-    className: 'pf-m-current',
+    defaultExpanded: expandedNodes.includes(nodeName),
+    category: infoNode.name,
   };
 };
 
@@ -58,7 +63,7 @@ const TreeView = () => {
     ({ sourcesReducer }) => sourcesReducer.openedNodes,
     () => true
   );
-  const openedNode = useSelector(({ sourcesReducer }) => sourcesReducer.detail.node);
+  const openedNode = useSelector(({ sourcesReducer }) => sourcesReducer.selectedNode);
 
   useEffect(() => {
     if (!isLoaded) {
@@ -85,14 +90,13 @@ const TreeView = () => {
       <CardBody>
         Sources
         <PFTreeView
-          {...(openedNode && { activeItems: [{ id: openedNode.match(/\d+/)[0] }] })}
+          {...(openedNode && { activeItems: [{ id: openedNode }] })}
           data={treeData}
-          onSelect={(e, item, parent) => {
-            const category = parent?.id || 'sources';
-            dispatch(clickOnNode(category, item.id));
+          onSelect={(e, item) => {
+            dispatch(clickOnNode(item.id));
 
             if (item.isSelectable) {
-              dispatch(loadItemDetail(category, item.id, item.name));
+              dispatch(loadItemDetail(item.id, item.name, item.category, item.originalId));
             }
           }}
         />

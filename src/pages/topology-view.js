@@ -158,7 +158,7 @@ const TopologyView = () => {
   const sources = useSelector(({ sourcesReducer }) => sourcesReducer.sources, shallowEqual);
   const sourceTypes = useSelector(({ sourcesReducer }) => sourcesReducer.sourceTypes, shallowEqual);
   const openedNode = useSelector(
-    ({ sourcesReducer }) => sourcesReducer.detail.node,
+    ({ sourcesReducer }) => sourcesReducer.selectedNode,
     () => true
   );
 
@@ -202,10 +202,10 @@ const TopologyView = () => {
   }, [isLoaded]);
 
   const handleNodeClick = (node) => {
-    reduxDispatch(clickOnNode(node.category, node.originalId));
+    reduxDispatch(clickOnNode(node.id));
 
     if (node.isSelectable) {
-      reduxDispatch(loadItemDetail(node.category, node.originalId, node.title));
+      reduxDispatch(loadItemDetail(node.id, node.title, node.category, node.originalId));
     }
 
     if (!node.wasClicked) {

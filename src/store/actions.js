@@ -47,17 +47,17 @@ export const loadSourceTypes = () => async (dispatch) => {
   }
 };
 
-export const loadItemDetail = (name, id, nodeName) => async (dispatch, getState) => {
+export const loadItemDetail = (node, nodeName, name, id) => async (dispatch, getState) => {
   dispatch({
     type: OPEN_DETAIL,
-    payload: { node: `${name}-${id}`, name: nodeName },
+    payload: { node, name: nodeName },
   });
 
   const {
     sourcesReducer: { details },
   } = getState();
 
-  if (details[`${name}-${id}`]) {
+  if (details[node]) {
     return dispatch({
       type: LOAD_DETAIL_FULFILLED,
     });
@@ -72,7 +72,7 @@ export const loadItemDetail = (name, id, nodeName) => async (dispatch, getState)
     return dispatch({
       type: LOAD_DETAIL_FULFILLED,
       payload: {
-        [`${name}-${id}`]: detail,
+        [node]: detail,
       },
     });
   } catch {
@@ -86,7 +86,7 @@ export const closeDetailDrawer = () => ({
   type: CLOSE_DETAIL,
 });
 
-export const clickOnNode = (name, id) => ({
+export const clickOnNode = (node) => ({
   type: CLICK_ON_NODE,
-  payload: { node: `${name}-${id}` },
+  payload: { node },
 });

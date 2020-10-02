@@ -16,6 +16,7 @@ export const sourcesInitialState = {
   details: {},
   isDetailLoading: false,
   detailOpen: false,
+  selectedNode: undefined,
   detail: {
     node: undefined,
     name: undefined,
@@ -73,6 +74,7 @@ const clickOnNode = (state, { payload }) => ({
   openedNodes: state.openedNodes.includes(payload.node)
     ? state.openedNodes.filter((node) => node !== payload.node)
     : [...state.openedNodes, payload.node],
+  selectedNode: payload.node,
 });
 
 export default {
