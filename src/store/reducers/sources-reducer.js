@@ -7,6 +7,8 @@ import {
   CLOSE_DETAIL,
   OPEN_DETAIL,
   CLICK_ON_NODE,
+  KEEP_CLOSED,
+  OPEN_DETAIL_BUTTON,
 } from '../action-types/sources-action-types';
 
 export const sourcesInitialState = {
@@ -22,6 +24,7 @@ export const sourcesInitialState = {
     name: undefined,
   },
   openedNodes: [],
+  keepClosed: false,
 };
 
 const loadData = (state, { payload: { sources } }) => ({
@@ -62,11 +65,21 @@ const closeDetail = (state) => ({
 
 const openDetail = (state, { payload }) => ({
   ...state,
-  detailOpen: true,
+  detailOpen: !state.keepClosed,
   detail: {
     node: payload.node,
     name: payload.name,
   },
+});
+
+const openDetailButton = (state) => ({
+  ...state,
+  detailOpen: true,
+});
+
+const keepClosed = (state) => ({
+  ...state,
+  keepClosed: !state.keepClosed,
 });
 
 const clickOnNode = (state, { payload }) => ({
@@ -86,4 +99,6 @@ export default {
   [CLOSE_DETAIL]: closeDetail,
   [OPEN_DETAIL]: openDetail,
   [CLICK_ON_NODE]: clickOnNode,
+  [KEEP_CLOSED]: keepClosed,
+  [OPEN_DETAIL_BUTTON]: openDetailButton,
 };
