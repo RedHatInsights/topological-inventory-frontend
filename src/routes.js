@@ -6,6 +6,7 @@ import { Grid, GridItem } from '@patternfly/react-core';
 
 import CardLoader from './components/loaders/card-loader';
 import DetailDrawer from './components/detail-drawer';
+import FinderView from './pages/finder-view';
 
 const TopologyView = lazy(() => import('./pages/topology-view'));
 const TreeView = lazy(() => import('./pages/tree-view'));
@@ -15,6 +16,7 @@ export const paths = {
   index: '/',
   treeView: '/tree-view',
   topologyView: '/topology-viewer',
+  finderView: '/finder',
 };
 
 const StyledGrid = styled(Grid)`
@@ -29,6 +31,7 @@ const Routes = () => (
           <Switch>
             <Route exact path={paths.treeView} component={TreeView} />
             <Route exact path={paths.topologyView} component={TopologyView} />
+            <Route exact path={paths.finderView} component={FinderView} />
             <Route path={Routes.index} component={Crossroads} />
             <Route path="*" component={Crossroads} />
           </Switch>

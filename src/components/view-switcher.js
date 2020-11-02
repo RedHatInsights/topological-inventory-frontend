@@ -28,6 +28,9 @@ const ViewSwitcher = (props) => {
           <StyledLink to={paths.topologyView}>
             <ToggleGroupItem isSelected={pathname === paths.topologyView}>Topology view</ToggleGroupItem>
           </StyledLink>
+          <StyledLink to={paths.finderView}>
+            <ToggleGroupItem isSelected={pathname === paths.finderView}>Finder view</ToggleGroupItem>
+          </StyledLink>
         </ToggleGroup>
       </FlexItem>
       <FlexItem>
